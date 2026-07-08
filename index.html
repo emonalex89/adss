@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monetag Ads Panel</title>
+    
+    <!-- 🚀 মনিত্যাগ অফিশিয়াল টেলিগ্রাম মিনি অ্যাপ SDK -->
+    <script src='//libtl.com/sdk.js' data-zone='11246000' data-sdk='show_11246000'></script>
+
+    <style>
+        body { 
+            margin: 0; 
+            padding: 0; 
+            background-color: #0f172a; 
+            color: #ffffff; 
+            font-family: Arial, sans-serif; 
+            text-align: center; 
+        }
+        /* ফুল স্ক্রিন ক্লিক জোন */
+        .click-container { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+            width: 100vw; 
+            cursor: pointer;
+            user-select: none;
+        }
+        .ad-btn { 
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8); 
+            color: white; 
+            border: none; 
+            padding: 20px 40px; 
+            font-size: 20px; 
+            font-weight: bold; 
+            border-radius: 50px; 
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+            transition: transform 0.2s;
+        }
+        .ad-btn:active {
+            transform: scale(0.95);
+        }
+        h2 { margin-top: 25px; font-size: 22px; color: #38bdf8; }
+        p { color: #94a3b8; font-size: 15px; margin-top: 8px; }
+    </style>
+</head>
+<body>
+
+<!-- পুরো স্ক্রিনটাই একটা ক্লিক জোন, যেখানে টাচ করলেই বিজ্ঞাপন ট্রিগার হবে -->
+<div class="click-container" id="screen-click-zone">
+    <button class="ad-btn">START ADVERTISEMENT</button>
+    <h2>বিজ্ঞাপন দেখতে এখানে ক্লিক করুন</h2>
+    <p>১ মিনিটের প্রক্সি সুরক্ষায় কাজ শেষে পেজ অটোমেটিক ব্যাক হবে।</p>
+</div>
+
+<script type="text/javascript">
+// ব্রাউজার বা টেলিগ্রাম ভেরিফিকেশন অবজেক্ট ক্রিয়েট (এরর বাইপাস করার জন্য)
+window.Telegram = window.Telegram || {};
+window.Telegram.WebApp = window.Telegram.WebApp || {
+    expand: function() { console.log('Expanded'); },
+    close: function() { console.log('Closed'); }
+};
+
+const tg = window.Telegram.WebApp;
+
+// মেইন বিজ্ঞাপন ট্রিগার ফাংশন
+function loadMonetagAd() {
+    console.log("Checking Monetag SDK...");
+
+    if (typeof show_11246000 === 'function') {
+        
+        /* 
+           বুলবুল ভাই, মনিত্যাগের ৩টি ফরম্যাটের মধ্যে যেটা আপনার প্যানেলে একটিভ আছে, 
+           সেটার পাশের ডাবল স্ল্যাশ (//) কেটে দিয়ে অন করে দিতে পারেন।
+           আমি এখানে ৩টিই একসাথে সাপোর্ট করার ব্যাকআপ মোড দিয়ে রেখেছি:
+        */
+
+        // 👉 প্রথম ট্রাই: Rewarded Interstitial বা Rewarded Popup ফরম্যাট রান করা
+        show_11246000('pop').then(() => {
+            console.log("Ad finished successfully!");
+            autoBack();
+        }).catch((err) => {
+            console.log("Trying fallback alternative format...");
+            
+            // 👉 দ্বিতীয় ট্রাই: সাধারণ কলব্যাক ছাড়া ইন-অ্যাপ মোড রান করা
+            try {
+                show_11246000({
+                    type: 'inApp',
+                    inAppSettings: { frequency: 1, capping: 0.1, interval: 30, timeout: 0, everyPage: false }
+                });
+                // ইন-অ্যাপ মোডের জন্য ৩০ সেকেন্ড পর অটো ব্যাক
+                setTimeout(autoBack, 30000);
+            } catch(e) {
+                // যদি তাও ফেইল করে তবে সাধারণ উইন্ডো কল
+                show_11246000();
+                setTimeout(autoBack, 35000);
+            }
+        });
+
+    } else {
+        alert("মনিত্যাগ SDK এখনও পেজে পুরোপুরি লোড হয়নি! প্রক্সি স্লো থাকলে ২-৩ সেকেন্ড পর আবার ক্লিক করুন।");
+    }
+}
+
+// অটো ব্যাক বা ক্লোজ করার ফাংশন
+function autoBack() {
+    console.log("Closing session...");
+    if (typeof tg.close === 'function') {
+        tg.close();
+    }
+    // সাধারণ ব্রাউজার হলে আগের পেজে ব্যাক করবে
+    window.history.back();
+    setTimeout(() => {
+        window.close();
+    }, 1000);
+}
+
+// স্ক্রিনের যেকোনো জায়গায় ক্লিক করলেই বিজ্ঞাপন রান হবে
+document.getElementById('screen-click-zone').addEventListener('click', function(e) {
+    e.preventDefault();
+    loadMonetagAd();
+});
+</script>
+
+</body>
+</html>
